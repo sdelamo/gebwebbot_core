@@ -1,0 +1,67 @@
+buildscript {
+    ext {
+        groovyVersion = '2.4.6'
+        spockCoreVersion = '1.0-groovy-2.4'
+        gebVersion = '0.13.1'
+        seleniumVersion = '2.53.0'
+        sqliteVersion = '3.8.11.2'
+        ddPlistVersion = '1.16'
+    }
+    repositories { jcenter() }
+    dependencies {}
+}
+
+plugins {
+    id "com.jfrog.bintray" version "1.6"
+}
+
+version "0.2"
+group 'groovycalamari.gebwebbot'
+
+
+apply plugin: "groovy"
+apply plugin: "codenarc"
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.gebish:geb-core:$gebVersion"
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
+    testCompile("org.spockframework:spock-core:$spockCoreVersion") {
+        exclude group: "org.codehaus.groovy"
+    }
+    // Drivers
+    compile "org.seleniumhq.selenium:selenium-firefox-driver:$seleniumVersion"
+    runtime "org.xerial:sqlite-jdbc:$sqliteVersion"
+    compile "com.googlecode.plist:dd-plist:$ddPlistVersion"
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.9'
+}
+
+codenarcMain {
+    ignoreFailures false
+    configFile file('codenarc/codenarc.groovy')
+}
+
+codenarcTest {
+    ignoreFailures false
+    configFile file('codenarc/codenarcTest.groovy')
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    pkg {
+        repo = 'maven'
+        name = 'gebwebbot_core'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/sdelamo/gebwebbot_core.git'
+        version {
+            attributes = ['grails-plugin': "$project.group:$project.name"]
+            name = project.version
+        }
+    }
+}
