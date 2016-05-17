@@ -7,19 +7,24 @@ buildscript {
         sqliteVersion = '3.8.11.2'
         ddPlistVersion = '1.16'
     }
-    repositories { jcenter() }
-    dependencies {}
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
+    }
 }
 
-plugins {
-    id "com.jfrog.bintray" version "1.6"
-}
-
-version "0.2"
+version "0.1"
 group 'groovycalamari.gebwebbot'
 
-
 apply plugin: "groovy"
+apply plugin: 'maven'
+apply from: "$rootDir/gradle/publishing.gradle"
+apply from: "$rootDir/gradle/credentials.gradle"
+apply from: "$rootDir/gradle/bintray.gradle"
+apply from: "$rootDir/gradle/codenarc.gradle"
+
 apply plugin: "codenarc"
 repositories {
     mavenCentral()
@@ -41,27 +46,8 @@ task wrapper(type: Wrapper) {
     gradleVersion = '2.9'
 }
 
-codenarcMain {
-    ignoreFailures false
-    configFile file('codenarc/codenarc.groovy')
-}
-
-codenarcTest {
-    ignoreFailures false
-    configFile file('codenarc/codenarcTest.groovy')
-}
-
-bintray {
-    user = System.getenv('BINTRAY_USER')
-    key = System.getenv('BINTRAY_KEY')
-    pkg {
-        repo = 'maven'
-        name = 'gebwebbot_core'
-        licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/sdelamo/gebwebbot_core.git'
-        version {
-            attributes = ['grails-plugin': "$project.group:$project.name"]
-            name = project.version
-        }
-    }
+task release {
+    description = 'Releases a version of the plugin on Bintray'
+    group = 'Publishing'
+    dependsOn bintrayUpload
 }
